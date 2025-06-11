@@ -1,0 +1,16 @@
+# Backend
+backend/tienda-reparaciones/target/
+backend/tienda-reparaciones/.mvn/wrapper/maven-wrapper.jar
+
+# Frontend
+frontend/tienda-reparaciones/node_modules/
+frontend/tienda-reparaciones/dist/
+frontend/tienda-reparaciones/.angular/
+
+# General
+.git/
+.gitignore
+README.md
+*.md
+.env
+.DS_Store

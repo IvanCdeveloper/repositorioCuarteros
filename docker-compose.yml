@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # Base de datos MySQL
+  database:
+    image: mysql:8.0
+    container_name: reparaciones-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: reparaciones
+      MYSQL_USER: reparaciones_user
+      MYSQL_PASSWORD: reparaciones_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - reparaciones-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Backend Spring Boot
+  backend:
+    build:
+      context: ./backend/tienda-reparaciones
+      dockerfile: Dockerfile
+    container_name: reparaciones-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/reparaciones
+      SPRING_DATASOURCE_USERNAME: reparaciones_user
+      SPRING_DATASOURCE_PASSWORD: reparaciones_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create
+    ports:
+      - "8080:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      reparaciones-network:
+        aliases:
+          - backend 
+
+
+  # Frontend Angular
+  frontend:
+    build:
+      context: ./frontend/tienda-reparaciones
+      dockerfile: Dockerfile
+    container_name: reparaciones-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - reparaciones-network
+
+volumes:
+  mysql_data:
+
+networks:
+  reparaciones-network:
+    driver: bridge
